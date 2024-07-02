@@ -13,19 +13,21 @@ class HelloController extends Controller
      */
     public function index(Request $request)
     {
-        $visitor_name = $request->visitor_name;
+        $visitor_name = $request->query('visitor_name', 'Guest');
         $client_ip = $request->ip();
-     
-        $locationInfo = Http::get('https://ipapi.co/' . $client_ip . '/json/')->json();
+        $locationInfo = Http::get('https://ipapi.co/'.$client_ip.'/json/')->json();
         $city = $locationInfo['city'] ?? 'New York';
-        $weatherInfo = Http::get("http://api.weatherapi.com/v1/current.json?key=f9b082fd88974d749d585442240207&q={$city}")->json();
+        $apiKey = env('WEATHER_API_KEY');
+        $weatherInfo = Http::get("http://api.weatherapi.com/v1/current.json?key={$apiKey}&q={$city}")->json();
         $temperature = $weatherInfo['current']['temp_c'] ?? '11';
-        $greeting = "Hello, {$visitor_name}  The temperature is  {$temperature}  degrees Celsius in {$city }";
+
+        $greeting = "Hello, {$visitor_name}! The temperature is {$temperature} degrees Celsius in {$city}";
+
         return response()->json([
-            'client_ip'=>$client_ip,
-            'location'=>$city,
-            'greeting'=>$greeting,
-        ]);
+            'client_ip' => $client_ip,
+            'location' => $city,
+            'greeting' => $greeting,
+        ], 200);
     }
 
     /**
